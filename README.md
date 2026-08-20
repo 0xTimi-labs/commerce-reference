@@ -16,7 +16,7 @@
 3. planned leaf 必须成功，未 planned leaf 必须为 `skipped`；
 4. `CI / Required` 使用 `always()` 校验全部状态，意外跳过、失败或取消不会误绿。
 
-PR 使用 quick 模式；Merge Queue 使用 full 模式。技术栈出现后必须同时提交确定性工具链文件和锁文件：Rust 使用 `rust-toolchain.toml`、`Cargo.lock`，Node.js 使用 `.node-version`、`package-lock.json`。
+PR 使用 quick 模式；`main` 通过 Merge Queue 合并，并使用 full 模式重新验证组合后的 SHA。技术栈出现后必须同时提交确定性工具链文件和锁文件：Rust 使用 `rust-toolchain.toml`、`Cargo.lock`，Node.js 使用 `.node-version`、`package-lock.json`。
 
 ### `Review / Required`
 
