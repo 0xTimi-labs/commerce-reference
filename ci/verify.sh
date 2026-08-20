@@ -47,10 +47,12 @@ if grep -q 'actions: write' "$root/.github/workflows/ai-review.yml"; then
 fi
 base_sha_literal="\$BASE_SHA"
 trusted_validator_literal="\$TRUSTED_VALIDATOR"
+trusted_skill_literal="\$TRUSTED_SKILL"
 grep -Fq "git show \"$base_sha_literal:.agents/skills/code-reviewer/SKILL.md\"" "$root/.github/workflows/ai-review.yml" || fail 'review skill is not loaded from protected base'
 grep -Fq "git show \"$base_sha_literal:.pi/models.example.json\"" "$root/.github/workflows/ai-review.yml" || fail 'model config is not loaded from protected base'
 grep -Fq "git show \"$base_sha_literal:ci/review/validate-output.sh\"" "$root/.github/workflows/ai-review.yml" || fail 'result validator is not loaded from protected base'
 grep -Fq "sh \"$trusted_validator_literal\"" "$root/.github/workflows/ai-review.yml" || fail 'trusted result validator is not executed'
+grep -Fq -- "--append-system-prompt \"$trusted_skill_literal\"" "$root/.github/workflows/ai-review.yml" || fail 'trusted review skill is not injected into the system prompt'
 grep -q 'timeout-minutes: 60' "$root/.github/workflows/ai-review.yml" || fail 'AI Review timeout is not 60 minutes'
 grep -q 'REVIEWED_SHA' "$root/.agents/skills/code-reviewer/SKILL.md" || fail 'review skill terminal SHA is missing'
 
