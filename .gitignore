@@ -1,0 +1,26 @@
+# OS/editor
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets and local Pi state
+.env
+.env.*
+!.env.example
+.pi/agent/
+.pi/sessions/
+.pi/models.json
+
+# Build and test output
+.cache/
+coverage/
+dist/
+build/
+target/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local CI artifacts
+ci/.tmp/

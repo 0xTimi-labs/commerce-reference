@@ -1,0 +1,123 @@
+name: CI
+
+on:
+  pull_request:
+  merge_group:
+    types: [checks_requested]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.event.merge_group.head_sha || github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  planner:
+    name: CI / Planner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      mode: ${{ steps.plan.outputs.mode }}
+      has_rust: ${{ steps.plan.outputs.has_rust }}
+      has_node: ${{ steps.plan.outputs.has_node }}
+      plan_json: ${{ steps.plan.outputs.plan_json }}
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Build file-evidence plan
+        id: plan
+        env:
+          CI_MODE: ${{ github.event_name == 'merge_group' && 'full' || 'quick' }}
+        run: sh ci/plan.sh --output "$GITHUB_OUTPUT" --mode "$CI_MODE"
+
+  contract:
+    name: CI / Contract
+    needs: planner
+    if: needs.planner.result == 'success'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Verify CI and review contracts
+        env:
+          CI_MODE: ${{ needs.planner.outputs.mode }}
+          CI_REQUIRE_ACTIONLINT: 'true'
+        run: sh ci/verify.sh "$CI_MODE"
+
+  rust:
+    name: CI / Rust
+    needs: planner
+    if: needs.planner.result == 'success' && needs.planner.outputs.has_rust == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Run deterministic Rust checks
+        env:
+          CI_MODE: ${{ needs.planner.outputs.mode }}
+        run: sh ci/run-stack.sh rust "$CI_MODE"
+
+  node:
+    name: CI / Node
+    needs: planner
+    if: needs.planner.result == 'success' && needs.planner.outputs.has_node == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout reviewed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up pinned Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Run deterministic Node checks
+        env:
+          CI_MODE: ${{ needs.planner.outputs.mode }}
+        run: sh ci/run-stack.sh node "$CI_MODE"
+
+  required:
+    name: CI / Required
+    needs: [planner, contract, rust, node]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout required-check contract
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Enforce planned job states
+        env:
+          CI_PLANNER_RESULT: ${{ needs.planner.result }}
+          CI_CONTRACT_RESULT: ${{ needs.contract.result }}
+          CI_PLANNER_MODE: ${{ needs.planner.outputs.mode }}
+          CI_EXPECTED_MODE: ${{ github.event_name == 'merge_group' && 'full' || 'quick' }}
+          CI_PLAN_JSON: ${{ needs.planner.outputs.plan_json }}
+          CI_RUST_PLANNED: ${{ needs.planner.outputs.has_rust }}
+          CI_RUST_RESULT: ${{ needs.rust.result }}
+          CI_NODE_PLANNED: ${{ needs.planner.outputs.has_node }}
+          CI_NODE_RESULT: ${{ needs.node.result }}
+        run: sh ci/required.sh

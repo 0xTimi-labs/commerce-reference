@@ -1,0 +1,5 @@
+# CI 与正式审查边界只能由仓库所有者批准。
+/.github/workflows/ @0xTimi2233
+/ci/ @0xTimi2233
+/.agents/skills/ @0xTimi2233
+/.pi/ @0xTimi2233
