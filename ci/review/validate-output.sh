@@ -21,7 +21,9 @@ fail() {
 [ "$key_outcome" = success ] || fail "DeepSeek key check result is '$key_outcome'"
 [ "$context_outcome" = success ] || fail "review context result is '$context_outcome'"
 [ "$install_outcome" = success ] || fail "Pi installation/configuration result is '$install_outcome'"
-[ -n "$report" ] && [ -f "$report" ] || fail 'review output file is missing'
+if [ -z "$report" ] || [ ! -f "$report" ]; then
+  fail 'review output file is missing'
+fi
 [ -s "$report" ] || fail 'review output is empty'
 
 [ "${#expected_sha}" -eq 40 ] || fail 'expected SHA is not 40 characters'

@@ -9,8 +9,9 @@ fail() {
 
 [ "${CI_PLANNER_RESULT:-}" = success ] || fail "planner result is '${CI_PLANNER_RESULT:-}', expected success"
 [ "${CI_CONTRACT_RESULT:-}" = success ] || fail "contract result is '${CI_CONTRACT_RESULT:-}', expected success"
-[ -n "${CI_PLANNER_MODE:-}" ] && [ "${CI_PLANNER_MODE:-}" = "${CI_EXPECTED_MODE:-}" ] || \
+if [ -z "${CI_PLANNER_MODE:-}" ] || [ "${CI_PLANNER_MODE:-}" != "${CI_EXPECTED_MODE:-}" ]; then
   fail "planner mode '${CI_PLANNER_MODE:-}' does not match '${CI_EXPECTED_MODE:-}'"
+fi
 case "${CI_PLAN_JSON:-}" in
   '{"version":1,'*) ;;
   *) fail 'planner did not publish a machine-readable plan' ;;
