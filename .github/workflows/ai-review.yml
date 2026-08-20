@@ -159,6 +159,7 @@ jobs:
             --no-context-files \
             --no-approve \
             --skill "$TRUSTED_SKILL" \
+            --append-system-prompt "$TRUSTED_SKILL" \
             "@$RUNNER_TEMP/review-context.md" \
             "@$RUNNER_TEMP/review.patch" \
             'Review the complete attached change and emit the required terminal record.' \
