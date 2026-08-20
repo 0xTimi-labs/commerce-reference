@@ -1,6 +1,7 @@
 # commerce-reference
 
 [![CI](https://github.com/0xTimi-labs/commerce-reference/actions/workflows/ci.yml/badge.svg)](https://github.com/0xTimi-labs/commerce-reference/actions/workflows/ci.yml)
+[![Review](https://github.com/0xTimi-labs/commerce-reference/actions/workflows/ai-review.yml/badge.svg)](https://github.com/0xTimi-labs/commerce-reference/actions/workflows/ai-review.yml)
 
 `commerce-reference` 是一个完全 greenfield 的商业系统参考实现。当前阶段只建立 GitHub Actions/CI 基建，不包含业务源码、产品骨架或旧项目兼容代码。
 
