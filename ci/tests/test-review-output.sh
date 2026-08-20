@@ -16,6 +16,14 @@ EOF
 sh "$root/ci/review/validate-output.sh" "$tmp/report" "$sha" \
   success success success success success success success >/dev/null
 
+{
+  printf '%s\n' '没有 must-fix。' '```text'
+  tail -n 4 "$tmp/report"
+  printf '%s\n' '```'
+} > "$tmp/fenced"
+sh "$root/ci/review/validate-output.sh" "$tmp/fenced" "$sha" \
+  success success success success success success success >/dev/null
+
 cat > "$tmp/block" <<EOF
 MUST-FIX 1 — src/example:1
 REVIEW_RESULT: BLOCK

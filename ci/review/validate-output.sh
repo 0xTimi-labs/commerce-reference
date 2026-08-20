@@ -33,7 +33,7 @@ esac
 
 nonblank=$(mktemp "${TMPDIR:-/tmp}/commerce-reference-review.XXXXXX")
 trap 'rm -f "$nonblank"' EXIT HUP INT TERM
-sed '/^[[:space:]]*$/d' "$report" >"$nonblank"
+sed -e '/^[[:space:]]*$/d' -e '/^```\(text\)\{0,1\}$/d' "$report" >"$nonblank"
 line_count=$(wc -l <"$nonblank" | tr -d '[:space:]')
 [ "$line_count" -ge 4 ] || fail 'review output has no complete terminal record'
 

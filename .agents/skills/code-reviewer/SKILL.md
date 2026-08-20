@@ -14,13 +14,11 @@ description: 审查当前 Pull Request 或 merge group 的完整变更；当 Git
 
 ## 输出
 
-先给简洁报告；没有 must-fix 时明确写“没有 must-fix”。最后严格输出以下四个非空行，其后不得追加内容：
+先给简洁报告；没有 must-fix 时明确写“没有 must-fix”。最后严格输出以下四个非空行，不使用 Markdown 代码围栏，其后不得追加内容：
 
-```text
 REVIEW_RESULT: PASS
 REVIEWED_SHA: <任务提供的 40 位小写 SHA>
 BLOCKERS: 0
 END_REVIEW
-```
 
 存在 must-fix 时将 `PASS` 改为 `BLOCK`，`BLOCKERS` 写实际正整数。无法完成可靠审查也必须 `BLOCK`，不得伪造通过。
